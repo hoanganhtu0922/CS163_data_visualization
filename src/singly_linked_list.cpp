@@ -47,10 +47,8 @@ void SinglyLinkedList::draw() {
 
         Vector2 center = { temp->currentPos.x, temp->currentPos.y};
         
-        // Vẽ ruột
         DrawCircleV(center, 35, mainColor);
         
-        // Vẽ viền - ĐÃ FIX CHỈ CÒN 4 THAM SỐ
         DrawCircleLinesV(center, 35, borderColor);
 
         std::string text = std::to_string(temp->data);
@@ -58,5 +56,22 @@ void SinglyLinkedList::draw() {
         DrawText(text.c_str(), (int)temp->currentPos.x - textWidth / 2, (int)temp->currentPos.y - 10, 20, textColor);
 
         temp = temp->next;
+    }
+}
+
+void SinglyLinkedList::run() {
+    int screenWidth = 1000;
+    int screenHeight = 600;
+    
+    while (!WindowShouldClose()) {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        update();
+        draw();
+        if (IsKeyPressed(KEY_A)) {
+            int value = rand() % 100;
+            append(value);
+        }
+        EndDrawing();
     }
 }

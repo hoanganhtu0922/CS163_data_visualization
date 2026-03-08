@@ -9,9 +9,10 @@
 
 struct SinglyLinkedList{
     Node* head = nullptr;
-    const float smoothSpeed = 0.1f;
+    const float smoothSpeed = 0.01f;
 
     void append(int value);
     void update();
     void draw();
+    void run();
 };
