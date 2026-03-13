@@ -39,7 +39,7 @@ void LinearProbingVisualizer::draw() {
         Rectangle rect = { table[i].currentPos.x - 40, table[i].currentPos.y - 40, 80, 80 };
         DrawRectangleRec(rect, Fade(DARKGRAY, 0.3f));
 
-        DrawText(TextFormat("[%d]", i), (int)rect.x + 30, (int)rect.y + 85, 15, GRAY);
+        DrawTextEx(font, TextFormat("[%d]", i), { (float)((int)rect.x + 30), (float)((int)rect.y + 85) }, 15, 1, DARKGRAY);
 
         if (table[i].occupied) {
             Color textColor = Fade(MAROON, table[i].alpha);
@@ -51,11 +51,11 @@ void LinearProbingVisualizer::draw() {
             int posX = (int)table[i].currentPos.x - textWidth / 2;
             int posY = (int)table[i].currentPos.y - 10;
             
-            DrawText(text, posX, posY, fontSize, textColor);
+            DrawTextEx(font, text, { (float)posX, (float)posY }, fontSize, 1, textColor);
         }
 
         if (is_inserting && i == carrying_index) {
-            DrawRectangleLinesEx(rect, 2, RED);
+            DrawRectangleLinesEx(rect, 4, RED);
         } else {
             DrawRectangleLinesEx(rect, 2, GRAY);
         }
@@ -63,7 +63,6 @@ void LinearProbingVisualizer::draw() {
 }
 
 void LinearProbingVisualizer::run() {
-    //InitWindow(1000, 600, "Linear Probing Visualizer");
     SetTargetFPS(60);
 
     double lst_time = GetTime();

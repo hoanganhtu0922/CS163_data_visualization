@@ -9,21 +9,22 @@
 
 
 int main() {
-    int screenWidth = 1000;
-    int screenHeight = 600;
+    int screenWidth = 1500;
+    int screenHeight = 900;
     
-    InitWindow(screenWidth, screenHeight, "Singly Linked List Visualizer - Smooth Transition");
+    InitWindow(screenWidth, screenHeight, "Data Structure Visualizer");
     SetTargetFPS(60);
 
     font = LoadFont("../../fonts/Roboto-Bold.ttf");
     std::vector <button> buttons;
 
-    buttons.push_back(button::button(50, 50, 150, 50, BLUE, "singly linked list"));
+    buttons.push_back(button::button(50, 50, 150, 50, GREEN, "singly linked list"));
     buttons.push_back(button::button(250, 50, 150, 50, GREEN, "linear probing"));
 
 
     while (!WindowShouldClose()) {
         BeginDrawing();
+        ClearBackground(Fade(LIGHTGRAY, 0.4f));
         for (auto& b : buttons) {
             b.draw();
         }

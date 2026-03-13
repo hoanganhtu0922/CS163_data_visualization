@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include "raymath.h"
+#include "font.h"
+#pragma once
 
 struct Slot {
     int value;
