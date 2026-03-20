@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <string.h>
 #include "font.h"
+#pragma once
 
 struct pop_up {
     int x, y;
@@ -10,9 +11,6 @@ struct pop_up {
     int value, is_pending = false;
 
     void update();
-    void delete_node();
-    void insert_before();
-    void insert_after();
     void draw();
 };
 

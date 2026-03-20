@@ -4,11 +4,8 @@
 
 struct Node {
     int data, size = 80;
-    bool is_clicking = 0;
-    Node* next;
-    Vector2 currentPos; 
-    Vector2 targetPos;  
-    float alpha;
-    bool is_hovered();
-    bool is_clicked();
+    bool is_clicking = 0, is_focused = 0;
+    Vector2 start_pos, current_pos, target_pos; 
+    float alpha_start = 0.0f, alpha_end = 1.0f;
+    bool is_checking = false;
 };

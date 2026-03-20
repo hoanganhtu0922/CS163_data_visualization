@@ -44,6 +44,8 @@ void pop_up::update() {
                     value = value * 10 + (inputBuffer[i] - '0');
                 }
                 is_pending = true; 
+            } else {
+                is_pending = false;
             }
             showPopup = false;
         }

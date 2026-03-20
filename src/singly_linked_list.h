@@ -6,23 +6,32 @@
 #include "raymath.h"
 #include "infotable.h"
 #include "pop_up.h"
+#include "textbox.h"
+#include <vector>
+#include "duration.h"
+#include "camera.h"
+#include "operation.h"
+#include "menu.h"
 
 #pragma once
 
 struct SinglyLinkedList{
-    std::string command;
-    Node* head = nullptr;
-    Node* pop_up_node = nullptr;
-    infotable list_info;
-    pop_up input;
-
+    std::vector <Node> list;
+    std::vector <std::vector <Node>> history;
     const float smoothSpeed = 0.1f;
-
-    void append(int value);
-    void delete_node();
-    void insert_before();
-    void insert_after();
-    void update();
+    float time_per_change = 0.5, progress = 0;
+    int curent_state = 0;
+    duration progress_duration, speed; // Add this line
+    camera cam;
+    operation opp;
+    menu list_data;
+    void insert(int value);
+    void delete_node(int value);
     void draw();
-    void run();
+    std::string run();
+    void draw_task();
+    void search(int value);
+    void update();
+    Vector2 get_pos(int i);
+    float get_alpha(int i);
 };
