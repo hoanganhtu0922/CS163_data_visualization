@@ -221,7 +221,6 @@ void LinearProbingVisualizer::update() {
 std::string LinearProbingVisualizer::run() {
     cam.initialize();
     opp.initialize(20, 700);
-    speed.initialize(850, 800, 100, 50);
     list_data.init(20, 50);
     list_data.choose = "Hash Table";
     list_data.focused = 0;
@@ -233,8 +232,10 @@ std::string LinearProbingVisualizer::run() {
     int screenWidth = 1000;
     int screenHeight = 600; 
 
-    progress_duration.initialize(550, 800, 200, 0);
 
+    speed.initialize(850, 800, 100, 50);
+    progress_duration.initialize(550, 800, 200, 0);
+    
     while (!WindowShouldClose()) {
         if (list_data.choose != "Hash Table") {
             return list_data.choose;

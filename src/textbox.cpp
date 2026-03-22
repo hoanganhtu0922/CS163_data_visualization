@@ -38,7 +38,7 @@ void text_box::update() {
             num.push_back((char)key);
         }
 
-        if (key >= 'a' && key <= 'z' && num.length() < 10 && isabc == true) {
+        if (key >= 'a' && key <= 'z' && num.length() < 20 && isabc == true) {
             num.push_back((char)key);
         }
 

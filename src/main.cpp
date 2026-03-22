@@ -6,6 +6,10 @@
 #include "linear_probing.h"
 #include <iostream>
 #include "trie.h"
+#include "avltree.h"
+#include "graph_visualization.h"
+#include "kruskal.h"
+#include "dijsktra.h"
 
 #pragma once
 
@@ -22,6 +26,9 @@ int main() {
     buttons.push_back(button::button(50, 50, 150, 50, GREEN, "singly linked list"));
     buttons.push_back(button::button(250, 50, 150, 50, GREEN, "Hash Table"));
     buttons.push_back(button::button(450, 50, 150, 50, GREEN, "Trie"));
+    buttons.push_back(button::button(650, 50, 150, 50, GREEN, "AVL Tree"));
+    buttons.push_back(button::button(850, 50, 150, 50, GREEN, "Kruskal"));
+    buttons.push_back(button::button(1050, 50, 150, 50, GREEN, "Dijkstra"));
 
     std::string selected_option = "none";
 
@@ -41,6 +48,24 @@ int main() {
         if (selected_option == "Trie") {
             Trie heh;
             heh.Run();
+            continue;
+        }
+
+        if (selected_option == "AVL Tree") {
+            AVLTree avl;
+            selected_option = avl.Run();
+            continue;
+        }
+
+        if (selected_option == "Kruskal") {
+            kruskal k;
+            selected_option = k.Run();
+            continue;
+        }
+
+        if (selected_option == "Dijkstra") {
+            dijkstra d;
+            selected_option = d.Run();
             continue;
         }
 
@@ -67,6 +92,21 @@ int main() {
                 if (b.text == "Trie") {
                     Trie heh;
                     heh.Run();
+                }
+
+                if (b.text == "AVL Tree") {
+                    AVLTree avl;
+                    selected_option = avl.Run();
+                }
+
+                if (b.text == "Kruskal") {
+                    kruskal k;
+                    k.Run();
+                }
+
+                if (b.text == "Dijkstra") {
+                    dijkstra d;
+                    d.Run();
                 }
             }
         }

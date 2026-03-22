@@ -199,13 +199,13 @@ void SinglyLinkedList::draw_task() {
 std::string SinglyLinkedList::run() {
     cam.initialize();
     opp.initialize(20, 700);
-    speed.initialize(850, 800, 100, 50);
     list_data.init(20, 50);
     list_data.choose = "Linked List";
-    list_data.focused = 1;
+    list_data.focused = 0;
     int screenWidth = 1000;
     int screenHeight = 600; 
 
+    speed.initialize(850, 800, 100, 50);
     progress_duration.initialize(550, 800, 200, 0);
 
     while (!WindowShouldClose()) {

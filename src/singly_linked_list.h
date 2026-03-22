@@ -18,7 +18,7 @@
 struct SinglyLinkedList{
     std::vector <Node> list;
     std::vector <std::vector <Node>> history;
-    const float smoothSpeed = 0.1f;
+    float smoothSpeed = 0.1f;
     float time_per_change = 0.5, progress = 0;
     int curent_state = 0;
     duration progress_duration, speed; // Add this line
