@@ -10,6 +10,8 @@
 #include "graph_visualization.h"
 #include "kruskal.h"
 #include "dijsktra.h"
+#include "assets.h"
+#include "highlight_code.h"
 
 #pragma once
 
@@ -22,64 +24,35 @@ int main() {
 
     font = LoadFont("../../fonts/Roboto-Bold.ttf");
     std::vector <button> buttons;
+    assets::Instance().LoadResources();
+    highlight_code::Instance().LoadResources();
+    highlight_code::Instance().prebuild_position();
 
-    buttons.push_back(button::button(50, 50, 150, 50, GREEN, "singly linked list"));
-    buttons.push_back(button::button(250, 50, 150, 50, GREEN, "Hash Table"));
-    buttons.push_back(button::button(450, 50, 150, 50, GREEN, "Trie"));
-    buttons.push_back(button::button(650, 50, 150, 50, GREEN, "AVL Tree"));
-    buttons.push_back(button::button(850, 50, 150, 50, GREEN, "Kruskal"));
-    buttons.push_back(button::button(1050, 50, 150, 50, GREEN, "Dijkstra"));
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+    Vector2 getsz = MeasureTextEx(font, "DSROLL", 100, 1);
+
+
+    buttons.push_back(button::button(225, 250, 300, 200, {62, 114, 175, 140}, "Singly Linked List"));
+    buttons.push_back(button::button(575, 250, 300, 200, {62, 114, 175, 140}, "Hash Table"));
+    buttons.push_back(button::button(925, 250, 300, 200, {62, 114, 175, 140}, "Trie"));
+    buttons.push_back(button::button(225, 550, 300, 200, {62, 114, 175, 140}, "AVL Tree"));
+    buttons.push_back(button::button(575, 550, 300, 200, {62, 114, 175, 140}, "Kruskal"));
+    buttons.push_back(button::button(925, 550, 300, 200, {62, 114, 175, 140}, "Dijkstra"));
 
     std::string selected_option = "none";
 
     while (!WindowShouldClose()) {
-        if (selected_option == "singly linked list") {
-            SinglyLinkedList list;
-            selected_option = list.run();
-            continue;
-        }
-
-        if (selected_option == "Hash Table") {
-            LinearProbingVisualizer linear;
-            selected_option = linear.run();
-            continue;
-        }
-
-        if (selected_option == "Trie") {
-            Trie heh;
-            heh.Run();
-            continue;
-        }
-
-        if (selected_option == "AVL Tree") {
-            AVLTree avl;
-            selected_option = avl.Run();
-            continue;
-        }
-
-        if (selected_option == "Kruskal") {
-            kruskal k;
-            selected_option = k.Run();
-            continue;
-        }
-
-        if (selected_option == "Dijkstra") {
-            dijkstra d;
-            selected_option = d.Run();
-            continue;
-        }
-
         BeginDrawing();
-        ClearBackground(Fade(LIGHTGRAY, 0.4f));
         DrawRectangleGradientV(0, 0, GetScreenWidth(), GetScreenHeight(), CLITERAL(Color){ 200, 220, 255, 255 }, CLITERAL(Color){ 255, 200, 230, 255 });
         for (auto& b : buttons) {
             b.draw();
         }
+        DrawTextEx(font, "DSROLL", {(float)(screenWidth - getsz.x) / 2,  10}, 100, 1, WHITE);
         EndDrawing();
 
         for (auto& b : buttons) {
             if (b.isClicked()) {
-                if (b.text == "singly linked list") {
+                if (b.text == "Singly Linked List") {
                     SinglyLinkedList list;
                     selected_option = list.run();
                 }

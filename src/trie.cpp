@@ -118,19 +118,16 @@ std::string Trie::Run() {
     SetTargetFPS(60);
     cam.initialize();
     opp.initialize(20, 700, 1);
-    speed.initialize(850, 800, 100, 50);
-    progress_duration.initialize(550, 800, 200, 0);
-    list_data.init(20, 50);
-    list_data.choose = "Trie";
-    list_data.focused = 0;
+    speed.initialize(1350, 800, 100, 50);
+    progress_duration.initialize(1000, 800, 200, 0);
+    
     int screenWidth = 1000;
     int screenHeight = 600; 
 
     while (!WindowShouldClose()) {
-        if (list_data.choose != "Trie") {
-            return list_data.choose;
+        if (assets::Instance().is_clicked({(float)(GetScreenWidth() - 100), 10}, "home_icon", 0.3f)) {
+            break;
         }
-
         cam.update_zoom();
         if (progress_duration.isDraggingHandle == 0 && speed.isDraggingHandle == 0) {
             cam.update_dragging();
@@ -160,9 +157,42 @@ std::string Trie::Run() {
         draw_task();
         EndDrawing();
     }
-    CloseWindow();
     return "";
 }
+
+/*
+        std::vector <std::string> trie_delete;
+        trie_delete.push_back("node cur = root");
+        trie_delete.push_back("for (char c : word)");
+        trie_delete.push_back("    if (cur->children[c - 'a'] == NULL) return;");
+        trie_delete.push_back("    cur = cur->children[c - 'a'];");
+        trie_delete.push_back("cur->isEndOfWord = false;");
+        code_snippets["trie_delete"] = trie_delete;
+
+        std::vector <std::string> trie_search;
+        trie_search.push_back("node cur = root");
+        trie_search.push_back("for (char c : word)");
+        trie_search.push_back("    if (cur->children[c - 'a'] == NULL) return false;");
+        trie_search.push_back("    cur = cur->children[c - 'a'];");
+        trie_search.push_back("return cur->isEndOfWord;");
+        code_snippets["trie_search"] = trie_search;
+
+        std::vector <std::string> trie_update;
+        trie_update.push_back("node target = search(root, oldWord);");
+        trie_update.push_back("if (target != NULL)");
+        trie_update.push_back("    deleteNode(root, oldWord);");
+        trie_update.push_back("    insert(newWord);");
+        code_snippets["trie_update"] = trie_update;
+
+        std::vector <std::string> trie_insert;
+        trie_insert.push_back("node cur = root");
+        trie_insert.push_back("for (char c : word)");
+        trie_insert.push_back("    if (cur->children[c - 'a'] == NULL)");
+        trie_insert.push_back("        cur->children[c - 'a'] = newNode();");
+        trie_insert.push_back("    cur = cur->children[c - 'a'];");
+        trie_insert.push_back("cur->isEndOfWord = true;");
+        code_snippets["trie_insert"] = trie_insert;
+*/
 
 void Trie::update() {
     if (opp.is_pending) {
@@ -177,10 +207,24 @@ void Trie::update() {
     }
 }
 
+/*
+    std::vector <std::string> trie_search;
+    trie_search.push_back("node cur = root");
+    trie_search.push_back("for (char c : word)");
+    trie_search.push_back("    if (cur->children[c - 'a'] == NULL) return false;");
+    trie_search.push_back("    cur = cur->children[c - 'a'];");
+    trie_search.push_back("return cur->isEndOfWord;");
+    code_snippets["trie_search"] = trie_search;
+*/
+
 void Trie::do_search(std::string word) {
+    history.clear();
     curent_state = 0;
     progress = 0;
     history.push_back(tree);
+    snippets.clear();
+    snippets.push_back(0);
+
     int curr = rootIdx;
     for (char c : word) {
         int next = -1;
@@ -189,20 +233,47 @@ void Trie::do_search(std::string word) {
                 next = childId;  
                 tree[childId].is_checking = true; 
                 history.push_back(tree); 
+                snippets.push_back(3);
                 tree[childId].is_checking = false; // Tắt hiệu ứng kiểm tra sau khi đã lưu trạng thái
                 break;
             }
         }
-        if (next == -1) return; // Từ không tồn tại
+        if (next == -1) {
+            history.push_back(tree);
+            snippets.push_back(2);
+            return;
+        }
         curr = next;
     }
+
+    if (tree[curr].isEndOfWord) {
+        tree[curr].is_focused = true; // Hiệu ứng tập trung vào node cuối nếu tìm thấy từ
+    }
+
+    history.push_back(tree);
+    snippets.push_back(4);
+
+    tree[curr].is_focused = false; // Tắt hiệu ứng tập trung sau khi đã lưu trạng thái
     // Có thể thêm hiệu ứng nếu tree[curr].isEndOfWord == true
 }
+
+/*
+    std::vector <std::string> trie_delete;
+    trie_delete.push_back("node cur = root");
+    trie_delete.push_back("for (char c : word)");
+    trie_delete.push_back("    if (cur->children[c - 'a'] == NULL) return;");
+    trie_delete.push_back("    cur = cur->children[c - 'a'];");
+    trie_delete.push_back("cur->isEndOfWord = false;");
+    code_snippets["trie_delete"] = trie_delete;
+*/
 
 void Trie::do_delete_node(std::string word) {
     curent_state = 0;
     progress = 0;
     history.clear();
+    snippets.clear();
+    snippets.push_back(0);
+
     int add = search(word); // Nếu từ không tồn tại thì không làm gì
     add *= -1; // Chuyển sang -1 để giảm cnt nếu đang xóa node
     // Xóa node đánh dấu kết thúc từ, không xóa node thực tế để tránh phức tạp
@@ -219,20 +290,29 @@ void Trie::do_delete_node(std::string word) {
                 next = childId;  
                 tree[childId].is_checking = true;
                 //UpdateLayout();
-                history.push_back(tree); 
+                history.push_back(tree);
+                snippets.push_back(3); 
                 tree[childId].is_checking = false; // Tắt hiệu ứng kiểm tra sau khi đã lưu trạng thái
                 break;
             }
         }
 
-        if (next == -1) return; // Từ không tồn tại, không làm gì
+        if (next == -1) {
+            history.push_back(tree);
+            snippets.push_back(-1);
+            return;
+        }
+
         curr = next;
         path.push_back(curr);
     }
 
-    if (search(word)) tree[curr].isEndOfWord = 0;
+    bool checking = 0;
+    if (search(word)) {tree[curr].isEndOfWord = 0; snippets.push_back(4); checking = 1;} // Nếu từ tồn tại thì xóa đánh dấu kết thúc từ, nếu không tồn tại thì không làm gì
     UpdateLayout(); // Nếu từ tồn tại thì xóa đánh dấu kết thúc từ, nếu không tồn tại thì không làm gì
     history.push_back(tree);
+    if (!checking)
+        snippets.push_back(-1); // Nếu từ tồn tại thì thêm snippet xóa node, nếu không tồn tại thì không làm gì
 
     if (add == -1) { // Nếu đang xóa node thì mới cần cập nhật layout
         for (int i = path.size() - 1; i >= 0; --i) {
@@ -240,6 +320,7 @@ void Trie::do_delete_node(std::string word) {
             if (tree[path[i]].cnt == 0) {
                 UpdateLayout(); // Cập nhật layout sau khi cnt về 0 để node này biến mất khỏi layout
                 history.push_back(tree);
+                snippets.push_back(-1); // Thêm snippet xóa node
             }// Nếu cnt vẫn còn > 0 thì dừng lại vì node này vẫn còn tồn tại 
         }
     }
@@ -248,7 +329,7 @@ void Trie::do_delete_node(std::string word) {
 void Trie::delete_node(std::string word) {
     if (search(word) == false) return; 
     int curr = rootIdx;
-    tree[curr].cnt--;
+
     for (char c : word) {
         int next = -1;
         for (int childId : tree[curr].children) {
@@ -277,7 +358,16 @@ void Trie::draw_task() {
     progress_duration.draw();
     opp.draw();
     speed.draw();
-    list_data.draw();
+    assets::Instance().draw_texture("home_icon", {(float)(GetScreenWidth() - 100), 10}, 0.3f);
+    if (snippets.size() == 0) return;
+
+    if (opp.command == "Insert") {
+        highlight_code::Instance().draw("trie_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Delete") {
+        highlight_code::Instance().draw("trie_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Search") {
+        highlight_code::Instance().draw("trie_search", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    }
 }
 
 bool Trie::search(std::string word) {
@@ -296,10 +386,26 @@ bool Trie::search(std::string word) {
     return tree[curr].isEndOfWord; // Trả về true nếu node cuối cùng đánh dấu kết thúc từ
 }
 
+/*
+    std::vector <std::string> trie_insert;
+    trie_insert.push_back("node cur = root");
+    trie_insert.push_back("for (char c : word)");
+    trie_insert.push_back("    if (cur->children[c - 'a'] == NULL)");
+    trie_insert.push_back("        cur->children[c - 'a'] = newNode();");
+    trie_insert.push_back("    cur = cur->children[c - 'a'];");
+    trie_insert.push_back("cur->isEndOfWord = true;");
+    code_snippets["trie_insert"] = trie_insert;
+*/
+
 void Trie::insert(std::string word) {
+    history.clear();
     history.push_back(tree);
+    snippets.clear();
+    snippets.push_back(0);
+
     int curr = rootIdx, add = !search(word); // Nếu từ đã tồn tại thì chỉ thêm hiệu ứng kiểm tra, không thêm node mới
     tree[curr].cnt += add; // Tăng cnt của root nếu đang thêm node mới
+
     for (char c : word) {
         int next = -1;
         for (int childId : tree[curr].children) {
@@ -308,6 +414,7 @@ void Trie::insert(std::string word) {
                 tree[childId].is_checking = true;
                 tree[next].cnt += add; // Chỉ tăng cnt nếu đang thêm node mới 
                 history.push_back(tree); 
+                snippets.push_back(4);
                 tree[childId].is_checking = false; // Tắt hiệu ứng kiểm tra sau khi đã lưu trạng thái
                 break;
             }
@@ -321,18 +428,20 @@ void Trie::insert(std::string word) {
             tree[curr].cnt = add; // Node mới có cnt = 1
             UpdateLayout();
             history.push_back(tree);
+            snippets.push_back(3);
             tree[curr].is_checking = true;
             history.push_back(tree);
+            snippets.push_back(3);
             tree[curr].is_checking = false;
         } else curr = next;
     }
 
     tree[curr].isEndOfWord = true;
     history.push_back(tree);
+    snippets.push_back(5);
 }
 
 void Trie::draw() {
-    list_data.update();
     opp.update();
     speed.update();
 

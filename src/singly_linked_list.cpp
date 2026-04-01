@@ -1,5 +1,36 @@
 #include "singly_linked_list.h"
-#include <iostream>
+
+/*
+        std::vector <std::string> linked_list_insert;
+        linked_list_insert.push_back("node cur = head");
+        linked_list_insert.push_back("while (cur->next != NULL)");
+        linked_list_insert.push_back("    cur = cur->next");
+        linked_list_insert.push_back("cur->next = newNode(v)");
+        code_snippets["linked_list_insert"] = linked_list_insert;
+
+        std::vector <std::string> linked_list_delete;
+        linked_list_delete.push_back("node cur = head");
+        linked_list_delete.push_back("while (cur != NULL && cur->data != v)");
+        linked_list_delete.push_back("    cur = cur->next");
+        linked_list_delete.push_back("if (cur != NULL)");
+        linked_list_delete.push_back("    delete cur;");  
+        code_snippets["linked_list_delete"] = linked_list_delete;
+
+        std::vector <std::string> linked_list_search;
+        linked_list_search.push_back("node cur = head");
+        linked_list_search.push_back("while (cur != NULL && cur->data != v)");
+        linked_list_search.push_back("    cur = cur->next");
+        linked_list_search.push_back("if (cur != NULL) return cur");
+        code_snippets["linked_list_search"] = linked_list_search;
+
+        std::vector <std::string> linked_list_update;
+        linked_list_update.push_back("node cur = head");
+        linked_list_update.push_back("while (cur != NULL && cur->data != oldValue)");
+        linked_list_update.push_back("    cur = cur->next");
+        linked_list_update.push_back("if (cur != NULL) cur->data = newValue");
+        code_snippets["linked_list_update"] = linked_list_update;
+*/
+
 Vector2 SinglyLinkedList::get_pos(int i) {
     Vector2 A = list[i].start_pos;
     Vector2 B = list[i].target_pos;
@@ -10,16 +41,29 @@ float SinglyLinkedList::get_alpha(int i) {
     return list[i].alpha_start + (1 - list[i].alpha_start) * (progress / time_per_change);
 }
 
+/*
+    std::vector <std::string> linked_list_insert;
+    linked_list_insert.push_back("node cur = head");
+    linked_list_insert.push_back("while (cur->next != NULL)");
+    linked_list_insert.push_back("    cur = cur->next");
+    linked_list_insert.push_back("cur->next = newNode(v)");
+    code_snippets["linked_list_insert"] = linked_list_insert;
+*/
+
 void SinglyLinkedList::insert(int value) {
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+
+    snippets.push_back(0);
     for (int i = 0; i < list.size(); i++) {
         list[i].is_checking = true;
         if (i) {
             list[i-1].is_checking = false;
         }
         history.push_back(list);
+        snippets.push_back(2);
     }
 
     Node newNode;
@@ -43,22 +87,36 @@ void SinglyLinkedList::insert(int value) {
     list.pop_back();
     newNode.start_pos = newNode.target_pos;
     newNode.alpha_start = 1.0f;
+    snippets.push_back(3);
     list.push_back(newNode);
     history.push_back(list);
     list = history[0];
 }
 
+/*
+    std::vector <std::string> linked_list_delete;
+    linked_list_delete.push_back("node cur = head");
+    linked_list_delete.push_back("while (cur != NULL && cur->data != v)");
+    linked_list_delete.push_back("    cur = cur->next");
+    linked_list_delete.push_back("if (cur != NULL)");
+    linked_list_delete.push_back("    delete cur;");  
+    code_snippets["linked_list_delete"] = linked_list_delete;
+*/
 
 void SinglyLinkedList::delete_node(int value) {
     if (list.empty()) return;  
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+    snippets.push_back(0);
+
     int id = -1;
     for (int i = 0; i < list.size(); i++) {
         list[i].is_checking = true;
         history.push_back(list);
         list[i].is_checking = false;
+        snippets.push_back(2);
 
         if (list[i].data == value) {
             id = i;
@@ -81,24 +139,39 @@ void SinglyLinkedList::delete_node(int value) {
         list[i].start_pos.x -= 160;
     }
 
+    snippets.push_back(4);
     history.push_back(list);
     list = history[0];
 }
+
+/*
+    std::vector <std::string> linked_list_search;
+    linked_list_search.push_back("node cur = head");
+    linked_list_search.push_back("while (cur != NULL && cur->data != v)");
+    linked_list_search.push_back("    cur = cur->next");
+    linked_list_search.push_back("if (cur != NULL) return cur");
+    code_snippets["linked_list_search"] = linked_list_search;
+*/
 
 void SinglyLinkedList::search(int value) {
     if (list.empty()) return;
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+    snippets.push_back(0);
+
     bool is_searched = false;
     for (int i = 0; i < list.size(); i++) {
         list[i].is_checking = true;
         history.push_back(list);
         list[i].is_checking = false;
+        snippets.push_back(2);
 
         if (list[i].data == value) {
             list[i].is_focused = true;
             history.push_back(list);
+            snippets.push_back(3);
             is_searched = true;
         }
     }
@@ -116,7 +189,6 @@ void SinglyLinkedList::search(int value) {
 void SinglyLinkedList::draw() {
     //if (history.empty()) return;
 
-    list_data.update();
     opp.update();
     speed.update();
 
@@ -179,11 +251,11 @@ void SinglyLinkedList::draw() {
 void SinglyLinkedList::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
-            insert(opp.value);
+            insert(stoi(opp.str_value));
         } else if (opp.command == "Delete") {
-            delete_node(opp.value);
+            delete_node(stoi(opp.str_value));
         } else if (opp.command == "Search") {
-            search(opp.value);
+            search(stoi(opp.str_value));
         }
         opp.is_pending = false;
     }
@@ -193,29 +265,37 @@ void SinglyLinkedList::draw_task() {
     progress_duration.draw();
     opp.draw();
     speed.draw();
-    list_data.draw();
+    assets::Instance().draw_texture("home_icon", {(float)(GetScreenWidth() - 100), 10}, 0.3f);
+    if (snippets.empty()) return;
+    if (opp.command == "Insert") {
+        highlight_code::Instance().draw("linked_list_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Delete") {
+        highlight_code::Instance().draw("linked_list_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Search") {
+        highlight_code::Instance().draw("linked_list_search", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Update") {
+        highlight_code::Instance().draw("linked_list_update", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    }
 }
 
 std::string SinglyLinkedList::run() {
     cam.initialize();
     opp.initialize(20, 700);
-    list_data.init(20, 50);
-    list_data.choose = "Linked List";
-    list_data.focused = 0;
     int screenWidth = 1000;
     int screenHeight = 600; 
 
-    speed.initialize(850, 800, 100, 50);
-    progress_duration.initialize(550, 800, 200, 0);
+    speed.initialize(1350, 800, 100, 50);
+    progress_duration.initialize(1000, 800, 200, 0);
 
     while (!WindowShouldClose()) {
-        if (list_data.choose != "Linked List") {
-            return list_data.choose;
-        }
         cam.update_zoom();
         if (progress_duration.isDraggingHandle == 0 && speed.isDraggingHandle == 0) {
             cam.update_dragging();
         }
+
+        if (assets::Instance().is_clicked({(float)(GetScreenWidth() - 100), 10}, "home_icon", 0.3f)) {
+            break;
+        } 
 
         if (curent_state + 1 < history.size()) {
             progress += GetFrameTime();

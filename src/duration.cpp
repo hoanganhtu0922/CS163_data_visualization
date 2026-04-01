@@ -3,7 +3,8 @@
 void duration::initialize(int _x, int _y, int _length, int _value) { 
     Color darkerRed = { 200, 0, 0, 255 }; // Darker red color
     x = _x;
-    y = _y; length = _length;
+    y = _y; 
+    length = _length;
     value = _value;
     progressBarColor = RED; // YouTube red
     hoverProgressBarColor = darkerRed; // Darker red

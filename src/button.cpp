@@ -11,8 +11,8 @@ button::button(int x, int y, int width, int height, Color color, std::string tex
 void button::draw() {
     DrawRectangleRounded({ (float)x, (float)y, (float)width, (float)height }, 0.2f, 4, color);
     DrawRectangleRoundedLines({ (float)x, (float)y, (float)width, (float)height }, 0.2f, 4, DARKGRAY);
-    Vector2 textSize = MeasureTextEx(font, text.c_str(), 20, 1);
-    DrawTextEx(font, text.c_str(), { (float)(x + (width - textSize.x) / 2), (float)(y + (height - textSize.y) / 2) }, 20, 1, WHITE);
+    Vector2 textSize = MeasureTextEx(font, text.c_str(), 30, 1);
+    DrawTextEx(font, text.c_str(), { (float)(x + (width - textSize.x) / 2), (float)(y + (height - textSize.y) / 2) }, 30, 1, WHITE);
 }
 
 bool button::isClicked() {

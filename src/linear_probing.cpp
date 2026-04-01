@@ -68,7 +68,6 @@ void LinearProbingVisualizer::draw() {
 
     //if (history.empty()) return;
 
-    list_data.update();
     opp.update();
     speed.update();
 
@@ -100,18 +99,78 @@ void LinearProbingVisualizer::draw_task() {
     progress_duration.draw();
     opp.draw();
     speed.draw();
-    list_data.draw();
+    assets::Instance().draw_texture("home_icon", {(float)(GetScreenWidth() - 100), 10}, 0.3f);
+    if (snippets.empty()) return;
+    if (opp.command == "Insert") {
+        highlight_code::Instance().draw("chaining_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Delete") {
+        highlight_code::Instance().draw("chaining_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Search") {
+        highlight_code::Instance().draw("chaining_search", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    }
 }
+
+/*
+        std::vector <std::string> chaining_insert;
+        chaining_insert.push_back("int idx = value % table_size");
+        chaining_insert.push_back("node cur = table[idx]");
+        chaining_insert.push_back("while (cur->next != NULL)");
+        chaining_insert.push_back("    cur = cur->next");
+        chaining_insert.push_back("cur->next = newNode(value)");
+        code_snippets["chaining_insert"] = chaining_insert;
+
+        std::vector <std::string> chaining_delete;
+        chaining_delete.push_back("int idx = value % table_size");
+        chaining_delete.push_back("node cur = table[idx]");
+        chaining_delete.push_back("while (cur != NULL && cur->data != value)");
+        chaining_delete.push_back("    cur = cur->next");
+        chaining_delete.push_back("if (cur != NULL) delete cur" );
+        code_snippets["chaining_delete"] = chaining_delete;
+
+        std::vector <std::string> chaining_search;
+        chaining_search.push_back("int idx = value % table_size");
+        chaining_search.push_back("node cur = table[idx]");
+        chaining_search.push_back("while (cur != NULL && cur->data != value)");
+        chaining_search.push_back("    cur = cur->next");
+        chaining_search.push_back("if (cur != NULL) return cur");
+        code_snippets["chaining_search"] = chaining_search;
+
+        std::vector <std::string> chaining_update;
+        chaining_update.push_back("int idx = oldvalue % table_size");
+        chaining_update.push_back("node cur = table[idx]");
+        chaining_update.push_back("while (cur != NULL && cur->data != oldvalue)");
+        chaining_update.push_back("    cur = cur->next");
+        chaining_update.push_back("if (cur != NULL) delete cur");
+        chaining_update.push_back("int newIdx = newValue % table_size");
+        chaining_update.push_back("cur = table[newIdx]");
+        chaining_update.push_back("while (cur->next != NULL)");
+        chaining_update.push_back("    cur = cur->next");
+        chaining_update.push_back("cur->next = newNode(newValue)");
+        code_snippets["chaining_update"] = chaining_update;
+*/
+
+/*
+        std::vector <std::string> chaining_insert;
+        chaining_insert.push_back("int idx = value % table_size");
+        chaining_insert.push_back("node cur = table[idx]");
+        chaining_insert.push_back("while (cur->next != NULL)");
+        chaining_insert.push_back("    cur = cur->next");
+        chaining_insert.push_back("cur->next = newNode(value)");
+        code_snippets["chaining_insert"] = chaining_insert;
+*/
 
 void LinearProbingVisualizer::insert(int value) {
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+    snippets.push_back(1);
     int id = value % 10;
 
     for (int i = 0; i < list[id].size(); i++) {
         list[id][i].is_checking = true;
         history.push_back(list);
+        snippets.push_back(3);
         list[id][i].is_checking = false;
     }
 
@@ -133,23 +192,39 @@ void LinearProbingVisualizer::insert(int value) {
     }
 
     list[id].push_back(newNode);
+    snippets.push_back(4);
     history.push_back(list);
     list[id].back().start_pos = list[id].back().target_pos;
     list[id].back().alpha_start = 1.0f;
     history.push_back(list);
+    snippets.push_back(-1);
     list = history[0];
 }
+
+/*
+        std::vector <std::string> chaining_delete;
+        chaining_delete.push_back("int idx = value % table_size");
+        chaining_delete.push_back("node cur = table[idx]");
+        chaining_delete.push_back("while (cur != NULL && cur->data != value)");
+        chaining_delete.push_back("    cur = cur->next");
+        chaining_delete.push_back("if (cur != NULL) delete cur" );
+        code_snippets["chaining_delete"] = chaining_delete;
+*/
 
 void LinearProbingVisualizer::delete_node(int value) {
     if (list.empty()) return;  
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+    snippets.push_back(1);
+
     int id = value % 10, choose_index = -1;
     for (int i = 0; i < list[id].size(); i++) {
         list[id][i].is_checking = true;
         history.push_back(list);
         list[id][i].is_checking = false;
+        snippets.push_back(3);
 
         if (list[id][i].data == value) {
             choose_index = i;
@@ -163,6 +238,7 @@ void LinearProbingVisualizer::delete_node(int value) {
 
     if (choose_index == -1) {
         list[id].back().is_checking = false;
+        snippets.push_back(-1);
         history.push_back(list);
         return;
     }
@@ -172,15 +248,31 @@ void LinearProbingVisualizer::delete_node(int value) {
         list[id][i].start_pos.y -= 160;
     }
 
+    snippets.push_back(4);
+
     history.push_back(list);
     list = history[0];
+    snippets.push_back(-1);
 }
+
+/*
+    std::vector <std::string> chaining_search;
+    chaining_search.push_back("int idx = value % table_size");
+    chaining_search.push_back("node cur = table[idx]");
+    chaining_search.push_back("while (cur != NULL && cur->data != value)");
+    chaining_search.push_back("    cur = cur->next");
+    chaining_search.push_back("if (cur != NULL) return cur");
+    code_snippets["chaining_search"] = chaining_search;
+*/
 
 void LinearProbingVisualizer::search(int value) {
     if (list.empty()) return;
     curent_state = 0;
     history.clear();
     history.push_back(list);
+    snippets.clear();
+    snippets.push_back(1);
+
     int id = value % 10;
     bool is_searched = false;
     for (int i = 0; i < list[id].size(); i++) {
@@ -188,9 +280,12 @@ void LinearProbingVisualizer::search(int value) {
         history.push_back(list);
         list[id][i].is_checking = false;
 
+        snippets.push_back(3);
+
         if (list[id][i].data == value) {
             list[id][i].is_focused = true;
             history.push_back(list);
+            snippets.push_back(4);
             is_searched = true;
         }
     }
@@ -203,16 +298,17 @@ void LinearProbingVisualizer::search(int value) {
 
     history.push_back(list);
     list = history[0];
+    snippets.push_back(-1);
 }
 
 void LinearProbingVisualizer::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
-            insert(opp.value);
+            insert(stoi(opp.str_value));
         } else if (opp.command == "Delete") {
-            delete_node(opp.value);
+            delete_node(stoi(opp.str_value));
         } else if (opp.command == "Search") {
-            search(opp.value);
+            search(stoi(opp.str_value));
         }
         opp.is_pending = false;
     }
@@ -221,9 +317,6 @@ void LinearProbingVisualizer::update() {
 std::string LinearProbingVisualizer::run() {
     cam.initialize();
     opp.initialize(20, 700);
-    list_data.init(20, 50);
-    list_data.choose = "Hash Table";
-    list_data.focused = 0;
     list.resize(10);
     for (int i = 0; i < 10; i++) {
         list[i].clear();
@@ -232,13 +325,12 @@ std::string LinearProbingVisualizer::run() {
     int screenWidth = 1000;
     int screenHeight = 600; 
 
-
-    speed.initialize(850, 800, 100, 50);
-    progress_duration.initialize(550, 800, 200, 0);
+    speed.initialize(1350, 800, 100, 50);
+    progress_duration.initialize(1000, 800, 200, 0);
     
     while (!WindowShouldClose()) {
-        if (list_data.choose != "Hash Table") {
-            return list_data.choose;
+        if (assets::Instance().is_clicked({(float)(GetScreenWidth() - 100), 10}, "home_icon", 0.3f)) {
+            break;
         }
         cam.update_zoom();
         if (progress_duration.isDraggingHandle == 0 && speed.isDraggingHandle == 0) {

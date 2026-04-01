@@ -13,11 +13,11 @@ void operation_graph::initialize(int _x, int _y, bool _isabc, bool is_dijkstra) 
 void operation_graph::update() {
     if (input.is_pending) {
         if (isabc == false) {
-            value = input.value;
+            str_value = input.str_value;
             input.is_pending = false;
             is_pending = true;
         } else {
-            str_value = input.num;
+            str_value = input.str_value;
             input.is_pending = false;
             is_pending = true;
         }

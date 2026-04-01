@@ -33,7 +33,7 @@ void graph::UpdateGraphLayout() {
         for (int j = i + 1; j < nodes.size(); j++) {
             Vector2 dir = Vector2Subtract(nodes[j].pos, nodes[i].pos);
             float dist = Vector2Length(dir);
-            if (dist < 0.1) dist = 0.1; // Prevent division by zero
+            if (dist < 4) dist = 4; // Prevent division by zero
 
             float forceMag = c3 / (dist * dist);
             Vector2 forceVec = Vector2Scale(Vector2Normalize(dir), forceMag);
