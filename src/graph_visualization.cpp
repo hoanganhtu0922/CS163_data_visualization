@@ -75,10 +75,10 @@ void graph::draw() {
             Color color_text = BLACK;
             DrawLineEx(start, end, 4.0f, GRAY);
 
-            if (edge.is_focused) {
+            if (edge.is_checking) {
                 DrawLineEx(start, end, 4.0f, SKYBLUE);
                 color_text = SKYBLUE;
-            } else if (edge.is_checking) {
+            } else if (edge.is_focused) {
                 DrawLineEx(start, end, 4.0f, PINK);
                 color_text = PINK;
             }
@@ -116,7 +116,7 @@ void graph::draw() {
         Vector2 text = MeasureTextEx(font, num_str.c_str(), 20, 1);
         DrawTextEx(font, num_str.c_str(), {node.pos.x - text.x / 2, node.pos.y - text.y / 2}, 20, 1, BLACK);
         if (node.is_checking) {
-            DrawRing(node.pos, 30.0f - 3, 30.0f + 3, 0, 360, 1, RED);
+            DrawRing(node.pos, 30.0f - 3, 30.0f + 3, 0, 360, 1, Fade(RED, 0.5f));
         }
     }
 }
@@ -147,4 +147,30 @@ void graph::gen_random(int n, int m) {
     }    
 }
 
+void graph::build_from_file(std::string file_path) {
+    nodes.clear();
+    edges.clear();
 
+    std::ifstream file(file_path); // Mở file để đọc dữ liệu
+
+    int n, m;
+    file >> n >> m;
+
+    for (int i = 0; i < n; i++) {
+        Node_graph node;
+        node.pos = { (float)GetRandomValue(100, 1400), (float)GetRandomValue(100, 800) };
+        node.id = i;
+        nodes.push_back(node);
+    }
+
+    for (int i = 0; i < m; i++) {
+        int u, v, length;
+        file >> u >> v >> length;
+        Edge edge;
+        edge.u_idx = u;
+        edge.v_idx = v;
+        edge.length = length;
+        edges.push_back(edge);
+    }
+    file.close();
+}

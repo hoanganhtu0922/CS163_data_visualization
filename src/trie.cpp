@@ -194,6 +194,41 @@ std::string Trie::Run() {
         code_snippets["trie_insert"] = trie_insert;
 */
 
+void Trie::build_from_str(std::string word) {
+    curent_state = 0;
+    progress = 0;
+    history.clear();
+    snippets.clear();
+    tree.clear();
+    reset();
+
+    std::cout << word << " heheh\n";
+
+    std::string str_vl = "";
+    for (char c : word) {
+        if (c == ' ') {
+            if (str_vl != "") {
+                insert(str_vl);
+                str_vl = "";
+                history.clear();
+                snippets.clear();
+            }
+            continue;
+        }
+        str_vl += c;
+    }
+
+    if (str_vl != "") {
+        insert(str_vl);
+    }
+
+    curent_state = 0;
+    progress = 0;
+    UpdateLayout();
+    history.clear();
+    snippets.clear();
+}
+
 void Trie::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
@@ -202,7 +237,54 @@ void Trie::update() {
             do_delete_node(opp.str_value);
         } else if (opp.command == "Search") {
             do_search(opp.str_value);
+        } else if (opp.command == "Random") {
+            history.clear();
+            snippets.clear();
+            reset();
+            int n = stoi(opp.str_value);
+            for (int i = 0; i < n; i++) {
+                std::string word;
+                int len = GetRandomValue(3, 25);
+                for (int j = 0; j < len; j++) {
+                    char c = 'a' + GetRandomValue(0, 25);
+                    word.push_back(c);
+                }
+                do_insert(word);
+            }
+            UpdateLayout();
+            history.clear();
+            snippets.clear();
+        } else if (opp.command == "KeyBoard") {
+            build_from_str(opp.str_value);
+        } else if (opp.command == "From File") {
+            std::ifstream file(opp.str_value);
+            std::string line;
+            getline(file, line);
+            build_from_str(line);
+            file.close();
+        } else if (opp.command == "Update") {
+            std::string oldValue, newValue;
+            for (int i = 0; i < opp.str_value.size(); i++) {
+                if (opp.str_value[i] == ' ') {
+                    oldValue = opp.str_value.substr(0, i);
+                    newValue = opp.str_value.substr(i + 1);
+                    break;
+                }
+            }
+
+            if (search(oldValue) == 0) {
+                do_delete_node(oldValue);
+                split_point = history.size();
+            } else {
+                do_delete_node(oldValue);
+                split_point = history.size();
+                do_insert(newValue, 1);
+            }
         }
+
+        curent_state = 0;
+        progress = 0;
+        opp.appear_sub_option = false;
         opp.is_pending = false;
     }
 }
@@ -272,6 +354,7 @@ void Trie::do_delete_node(std::string word) {
     progress = 0;
     history.clear();
     snippets.clear();
+    history.push_back(tree);
     snippets.push_back(0);
 
     int add = search(word); // Nếu từ không tồn tại thì không làm gì
@@ -289,7 +372,7 @@ void Trie::do_delete_node(std::string word) {
             if (tree[childId].value == c) {
                 next = childId;  
                 tree[childId].is_checking = true;
-                //UpdateLayout();
+                UpdateLayout();
                 history.push_back(tree);
                 snippets.push_back(3); 
                 tree[childId].is_checking = false; // Tắt hiệu ứng kiểm tra sau khi đã lưu trạng thái
@@ -324,6 +407,10 @@ void Trie::do_delete_node(std::string word) {
             }// Nếu cnt vẫn còn > 0 thì dừng lại vì node này vẫn còn tồn tại 
         }
     }
+
+    UpdateLayout(); // Cập nhật layout sau khi xóa node để phản ánh sự thay đổi
+    history.push_back(tree);
+    snippets.push_back(-1); // Thêm snippet xóa node
 }
 
 void Trie::delete_node(std::string word) {
@@ -344,14 +431,18 @@ void Trie::delete_node(std::string word) {
     tree[curr].isEndOfWord = false;
 }
 
-void Trie::do_insert(std::string word) {
+void Trie::do_insert(std::string word, int is_reset) {
     curent_state = 0;
     progress = 0;
-    history.clear();
-    history.push_back(tree);
+    if (is_reset == 0) {
+        history.clear();
+        snippets.clear();
+    }
+
     insert(word);
     UpdateLayout();
     history.push_back(tree);
+    snippets.push_back(-1);
 }
 
 void Trie::draw_task() {
@@ -367,6 +458,12 @@ void Trie::draw_task() {
         highlight_code::Instance().draw("trie_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
     } else if (opp.command == "Search") {
         highlight_code::Instance().draw("trie_search", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    } else if (opp.command == "Update") {
+        if (curent_state < split_point) {
+            highlight_code::Instance().draw("trie_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        } else {
+            highlight_code::Instance().draw("trie_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        }
     }
 }
 
@@ -398,9 +495,7 @@ bool Trie::search(std::string word) {
 */
 
 void Trie::insert(std::string word) {
-    history.clear();
     history.push_back(tree);
-    snippets.clear();
     snippets.push_back(0);
 
     int curr = rootIdx, add = !search(word); // Nếu từ đã tồn tại thì chỉ thêm hiệu ứng kiểm tra, không thêm node mới

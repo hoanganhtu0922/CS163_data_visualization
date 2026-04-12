@@ -29,11 +29,13 @@ void AVLTree::update_layout() {
     dfs(root, 0, SEP, 0);
 }
 
-void AVLTree::do_insert(int value) {
+void AVLTree::do_insert(int value, int is_reset) {
     curent_state = 0;
     progress = 0;
-    history.clear();
-    snippets.clear();
+    if (is_reset == 0) {
+        history.clear();
+        snippets.clear();
+    }
     save_history(-1);
     insert(root, value);
     save_history(-1);
@@ -59,6 +61,35 @@ void AVLTree::do_search(int value) {
     save_history(-1);
 }
 
+void AVLTree::build_from_str(std::string str) {
+    root = nullptr;
+    for (int i = 0; i < tree.size(); ++i) {
+        tree[i].exist = 0; // Reset all nodes
+    }
+    curent_state = 0;
+    progress = 0;
+    history.clear();
+    snippets.clear();
+
+    int value = 0;
+    for (int i = 0; i < str.size(); i++) {
+        if (str[i] == ' ') {
+            insert(root, value);
+            value = 0;
+        } else {
+            value = value * 10 + (str[i] - '0');
+        }
+    }
+    // Don't forget the last node
+    if (!str.empty() && str.back() != ' ') {
+        insert(root, value);
+    }
+
+    update_layout();
+    history.clear();
+    snippets.clear();
+}
+
 void AVLTree::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
@@ -70,7 +101,47 @@ void AVLTree::update() {
         } else if (opp.command == "Search") {
             command_type = "avl_search";
             do_search(stoi(opp.str_value));
+        } else if (opp.command == "Random") {
+            for (int i = 0; i < tree.size(); ++i) {
+                tree[i].exist = 0; // Reset all nodes
+            }
+            root = nullptr;
+            for (int i = 0; i < stoi(opp.str_value); i++) {
+                int val = GetRandomValue(0, 999);
+                insert(root, val);
+            }
+            update_layout();
+            history.clear();
+            snippets.clear();
+        } else if (opp.command == "KeyBoard") {
+            build_from_str(opp.str_value);
+        } else if (opp.command == "From File") {
+            std::ifstream file(opp.str_value);
+            std::string line;
+            getline(file, line);
+            build_from_str(line);
+            file.close();
+        } else if (opp.command == "Update") {
+            command_type = "avl_update";
+            std::string oldValue, newValue;
+            for (int i = 0; i < opp.str_value.size(); i++) {
+                if (opp.str_value[i] == ' ') {
+                    oldValue = opp.str_value.substr(0, i);
+                    newValue = opp.str_value.substr(i + 1);
+                    break;
+                }
+            }
+
+            if (search(root, stoi(oldValue)) == 0) {
+                do_delete_node(stoi(oldValue));
+            } else {
+                do_delete_node(stoi(oldValue));
+                split_point = history.size();
+                do_insert(stoi(newValue), 1);
+            }
         }
+
+        opp.appear_sub_option = false;
         opp.is_pending = false;
     }
 }
@@ -450,7 +521,15 @@ void AVLTree::draw_task() {
     if (snippets.empty())
         return;
 
-    highlight_code::Instance().draw(command_type, snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    if (command_type == "avl_update") {
+        if (curent_state < split_point) {
+            highlight_code::Instance().draw("avl_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        } else {
+            highlight_code::Instance().draw("avl_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        }
+    } else {
+        highlight_code::Instance().draw(command_type, snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+    }
 }
 
 std::string AVLTree::Run() {

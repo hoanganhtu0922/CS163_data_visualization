@@ -24,10 +24,11 @@ void duration::draw() {
     float handleY = y + barHeight / 2.0f;
 
     DrawRectangle((float)x, (float)y, (float)length, barHeight, isHoveringBar ? hoverBackgroundColor : backgroundColor);
-
     DrawRectangle((float)x, (float)y, (float)value, barHeight, isHoveringBar ? hoverProgressBarColor : progressBarColor);
-
     DrawCircle(handleX, handleY, isDraggingHandle ? handleRadius + 2.0f : handleRadius, isHoveringHandle ? hoverHandleColor : handleColor);
+    if (length == 200) {
+        assets::Instance().draw_texture(!is_paused ? "pause_icon" : "play_icon", { (float)x - 80, (float)(y - 26) }, 0.15f);
+    }
 }
 
 void duration::update() {
@@ -57,6 +58,12 @@ void duration::update() {
         is_changed = true;
     }
 
+    if (assets::Instance().is_clicked({ (float)x - 80, (float)(y - 26) }, "play_icon", 0.15f)) {
+        is_paused = !is_paused;
+        is_changed = true;
+    }
+
     if (value < 0) value = 0;
     if (value > length) value = length;
+    if (is_paused) is_changed = true;
 }

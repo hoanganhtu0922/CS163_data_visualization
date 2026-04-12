@@ -107,7 +107,13 @@ void LinearProbingVisualizer::draw_task() {
         highlight_code::Instance().draw("chaining_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
     } else if (opp.command == "Search") {
         highlight_code::Instance().draw("chaining_search", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
-    }
+    } else if (opp.command == "Update") {
+        if (curent_state < split_point) {
+            highlight_code::Instance().draw("chaining_delete", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        } else {
+            highlight_code::Instance().draw("chaining_insert", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
+        }
+    } 
 }
 
 /*
@@ -159,11 +165,14 @@ void LinearProbingVisualizer::draw_task() {
         code_snippets["chaining_insert"] = chaining_insert;
 */
 
-void LinearProbingVisualizer::insert(int value) {
+void LinearProbingVisualizer::insert(int value, int is_reset) {
     curent_state = 0;
-    history.clear();
+    if (is_reset == 0) {
+        history.clear();
+        snippets.clear();
+    }
+
     history.push_back(list);
-    snippets.clear();
     snippets.push_back(1);
     int id = value % 10;
 
@@ -198,7 +207,7 @@ void LinearProbingVisualizer::insert(int value) {
     list[id].back().alpha_start = 1.0f;
     history.push_back(list);
     snippets.push_back(-1);
-    list = history[0];
+    if (is_reset == 0) list = history[0];
 }
 
 /*
@@ -251,8 +260,8 @@ void LinearProbingVisualizer::delete_node(int value) {
     snippets.push_back(4);
 
     history.push_back(list);
-    list = history[0];
     snippets.push_back(-1);
+    list = history[0];
 }
 
 /*
@@ -265,8 +274,8 @@ void LinearProbingVisualizer::delete_node(int value) {
     code_snippets["chaining_search"] = chaining_search;
 */
 
-void LinearProbingVisualizer::search(int value) {
-    if (list.empty()) return;
+bool LinearProbingVisualizer::search(int value) {
+    if (list.empty()) return false;
     curent_state = 0;
     history.clear();
     history.push_back(list);
@@ -299,20 +308,95 @@ void LinearProbingVisualizer::search(int value) {
     history.push_back(list);
     list = history[0];
     snippets.push_back(-1);
+    return is_searched;
+}
+
+void LinearProbingVisualizer::build_from_str(std::string str) {
+    list.clear();
+    list.resize(10);
+    history.clear();
+    snippets.clear();
+    int value = 0;
+    for (int i = 0; i < str.size(); i++) {
+        if (str[i] == ' ') {
+            insert(value);
+            value = 0;
+            list = history.back();
+        } else {
+            value = value * 10 + (str[i] - '0');
+        }
+    }
+    // Don't forget the last node
+    if (!str.empty() && str.back() != ' ') {
+        insert(value, 1);
+        list = history.back();
+    }
+
+    history.clear();
+    snippets.clear();
 }
 
 void LinearProbingVisualizer::update() {
     if (opp.is_pending) {
+        curent_state = 0;
+        progress = 0;
+        history.clear();
+        snippets.clear();
         if (opp.command == "Insert") {
             insert(stoi(opp.str_value));
         } else if (opp.command == "Delete") {
             delete_node(stoi(opp.str_value));
         } else if (opp.command == "Search") {
             search(stoi(opp.str_value));
+        } else if (opp.command == "Random") {
+            history.clear();
+            snippets.clear();
+            list.clear();
+            list.resize(10);
+            for (int i = 0; i < 10; i++) {
+                list[i].clear();
+            }
+            int n = stoi(opp.str_value);
+            for (int i = 0; i < n; i++) {
+                int value = GetRandomValue(0, 999);
+                insert(value, 1);
+            }
+            history.clear();
+            //snippets.clear();
+        } else if (opp.command == "From File") {
+            std::ifstream file(opp.str_value);
+            getline(file, opp.str_value);
+            build_from_str(opp.str_value);
+            file.close();
+        } else if (opp.command == "KeyBoard") {
+            build_from_str(opp.str_value);
+        } else if (opp.command == "Update") {
+            std::string oldValue, newValue;
+            for (int i = 0; i < opp.str_value.size(); i++) {
+                if (opp.str_value[i] == ' ') {
+                    oldValue = opp.str_value.substr(0, i);
+                    newValue = opp.str_value.substr(i + 1);
+                    break;
+                }
+            }
+
+            if (search(stoi(oldValue)) == 0) {
+                delete_node(stoi(oldValue));
+                split_point = history.size();
+            } else {
+                delete_node(stoi(oldValue));
+                split_point = history.size();
+                list = history.back();
+                insert(stoi(newValue), 1);
+                list = history[0];
+            }
         }
-        opp.is_pending = false;
+
+        opp.appear_sub_option = false;
+        opp.is_pending = false; 
     }
 }
+    
 
 std::string LinearProbingVisualizer::run() {
     cam.initialize();

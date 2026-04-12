@@ -1,6 +1,17 @@
 #include "kruskal.h"
 #pragma once
 
+
+/*
+    std::vector <std::string> kruskal;
+    kruskal.push_back("sort edges by weight");
+    kruskal.push_back("for (edge in edges)");
+    kruskal.push_back("    if (find(edge.u) != find(edge.v)));
+    kruskal.push_back("        union(edge.u, edge.v);");    
+    kruskal.push_back("        add edge to MST;");
+    kruskal.push_back("    else erase edge from consideration");
+*/
+
 void kruskal::find_mst() {
     // 1. Sắp xếp các cạnh theo trọng số
     curent_state = 0; progress = 0;
@@ -14,6 +25,7 @@ void kruskal::find_mst() {
         edge.is_focused = 0; // Đảm bảo tất cả các cạnh ban đầu không được đánh dấu tập trung
     }
 
+    snippets.push_back(0);
     history.push_back(sorted_edges);
 
     // 2. Khởi tạo cấu trúc Union-Find để kiểm tra chu trình
@@ -51,17 +63,22 @@ void kruskal::find_mst() {
         Edge& edge = *it_edge;
         edge.is_checking = 1; // Đánh dấu đang kiểm tra cạnh này
         history.push_back(sorted_edges); // Lưu lại trạng thái hiện tại của MST trước khi thêm cạnh mới
+        snippets.push_back(2); // Thêm đoạn mã tương ứng với bước này (có thể là "Checking edge (u, v) with weight w")
         edge.is_checking = 0; // Bỏ đánh dấu kiểm tra sau khi đã lưu trạng thái
         if (unite(edge.u_idx, edge.v_idx)) {
             edge.is_focused = 1; // Đánh dấu cạnh này là một phần của MST
             history.push_back(sorted_edges); // Lưu lại trạng thái hiện tại của MST sau khi thêm cạnh mới
+            snippets.push_back(4); // Thêm đoạn mã tương ứng với bước này (có thể là "Added edge (u, v) to MST")
             ++it_edge;
         } else {
             it_edge = sorted_edges.erase(it_edge);
+            history.push_back(sorted_edges); // Lưu lại trạng thái hiện tại của MST sau khi loại bỏ cạnh này khỏi consideration
+            snippets.push_back(5); 
         }
     }
 
     history.push_back(sorted_edges); // Lưu lại trạng thái cuối cùng của MST sau khi hoàn thành thuật toán
+    snippets.push_back(-1); // Thêm đoạn mã tương ứng với bước này (có thể là "Kruskal's algorithm completed")
 }
 
 void kruskal::draw() {
@@ -97,14 +114,16 @@ void kruskal::draw() {
 void kruskal::draw_task() {
     progress_duration.draw();
     speed.draw();
-    list_data.draw();
     opp.draw();
     G.UpdateGraphLayout();
     assets::Instance().draw_texture("home_icon", {(float)(GetScreenWidth() - 100), 10}, 0.3f);
+    if (snippets.empty()) return;
+    highlight_code::Instance().draw("kruskal", snippets[std::min(curent_state, (int)snippets.size() - 1)]);
 }
 
 void kruskal::update() {
     if (opp.is_pending) {
+        snippets.clear();
         history.clear();
         curent_state = 0; progress = 0;
         progress_duration.value = 0;
@@ -120,22 +139,69 @@ void kruskal::update() {
             G.gen_random(vertices, edges);
         } else if (opp.command == "Kruskal") {
             find_mst();
+        } else if (opp.command == "Random") {
+            std::string str = opp.str_value;
+            std::pair <int, int> val = {0, 0};
+            for (int i = 0; i < str.size(); i++) {
+                if (str[i] == ' ') {
+                    val.first = stoi(str.substr(0, i));
+                    val.second = stoi(str.substr(i + 1));
+                    break;
+                }
+            }
+
+            vertices = val.first;
+            edges = val.second;
+            edges = std::min(edges, vertices * (vertices - 1) / 2); // Giới hạn số cạnh tối đa
+            G.gen_random(vertices, edges);
+        } else if (opp.command == "Add Edges") {
+            std::string str = opp.str_value;
+            std::tuple<int, int, int> new_edges;
+            std::string edge_str = str.substr(0, str.length());
+            size_t first_space = edge_str.find(' ');
+            size_t second_space = edge_str.find(' ', first_space + 1);
+            if (first_space != std::string::npos && second_space != std::string::npos) {
+                int u = stoi(edge_str.substr(0, first_space));
+                int v = stoi(edge_str.substr(first_space + 1, second_space - first_space - 1));
+                int w = stoi(edge_str.substr(second_space + 1));
+                new_edges = {u, v, w};
+            }
+
+            bool edge_exists = false;
+            for (auto &edge : G.edges) {
+                if ((edge.u_idx == std::get<0>(new_edges) && edge.v_idx == std::get<1>(new_edges)) || (edge.u_idx == std::get<1>(new_edges) && edge.v_idx == std::get<0>(new_edges))) {
+                    edge.length = std::get<2>(new_edges); // Cập nhật trọng số nếu cạnh đã tồn tại
+                    edge_exists = true;
+                    break;
+                }
+            }
+
+            if (!edge_exists) {
+                if (std::get<0>(new_edges) >= 0 && std::get<0>(new_edges) < G.nodes.size() && std::get<1>(new_edges) >= 0 && std::get<1>(new_edges) < G.nodes.size()) {
+                    G.edges.push_back({std::get<0>(new_edges), std::get<1>(new_edges), std::get<2>(new_edges)}); // Thêm cạnh mới nếu chưa tồn tại
+                }
+            }
+        } else if (opp.command == "From File") {
+            G.build_from_file(opp.str_value);
         }
+
+        opp.appear_sub_option = false;
         opp.is_pending = false;
     }
 }
 
 std::string kruskal::Run() {
-    opp.initialize(20, 700, 0, false);
     cam.initialize();
-    speed.initialize(850, 800, 100, 50);
+    opp.initialize(20, 700, 0, false);
+    
     list_data.init(20, 50);
     list_data.choose = "Kruskal";
     list_data.focused = 0;
     int screenWidth = 1000;
     int screenHeight = 600; 
 
-    progress_duration.initialize(550, 800, 200, 0);
+    speed.initialize(1350, 800, 100, 50);
+    progress_duration.initialize(1000, 800, 200, 0);
 
     while (!WindowShouldClose()) {
         if (assets::Instance().is_clicked({(float)(GetScreenWidth() - 100), 10}, "home_icon", 0.3f)) {

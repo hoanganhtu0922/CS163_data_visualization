@@ -1,34 +1,34 @@
 #include "singly_linked_list.h"
 
 /*
-        std::vector <std::string> linked_list_insert;
-        linked_list_insert.push_back("node cur = head");
-        linked_list_insert.push_back("while (cur->next != NULL)");
-        linked_list_insert.push_back("    cur = cur->next");
-        linked_list_insert.push_back("cur->next = newNode(v)");
-        code_snippets["linked_list_insert"] = linked_list_insert;
+    std::vector <std::string> linked_list_insert;
+    linked_list_insert.push_back("node cur = head");
+    linked_list_insert.push_back("while (cur->next != NULL)");
+    linked_list_insert.push_back("    cur = cur->next");
+    linked_list_insert.push_back("cur->next = newNode(v)");
+    code_snippets["linked_list_insert"] = linked_list_insert;
 
-        std::vector <std::string> linked_list_delete;
-        linked_list_delete.push_back("node cur = head");
-        linked_list_delete.push_back("while (cur != NULL && cur->data != v)");
-        linked_list_delete.push_back("    cur = cur->next");
-        linked_list_delete.push_back("if (cur != NULL)");
-        linked_list_delete.push_back("    delete cur;");  
-        code_snippets["linked_list_delete"] = linked_list_delete;
+    std::vector <std::string> linked_list_delete;
+    linked_list_delete.push_back("node cur = head");
+    linked_list_delete.push_back("while (cur != NULL && cur->data != v)");
+    linked_list_delete.push_back("    cur = cur->next");
+    linked_list_delete.push_back("if (cur != NULL)");
+    linked_list_delete.push_back("    delete cur;");  
+    code_snippets["linked_list_delete"] = linked_list_delete;
 
-        std::vector <std::string> linked_list_search;
-        linked_list_search.push_back("node cur = head");
-        linked_list_search.push_back("while (cur != NULL && cur->data != v)");
-        linked_list_search.push_back("    cur = cur->next");
-        linked_list_search.push_back("if (cur != NULL) return cur");
-        code_snippets["linked_list_search"] = linked_list_search;
+    std::vector <std::string> linked_list_search;
+    linked_list_search.push_back("node cur = head");
+    linked_list_search.push_back("while (cur != NULL && cur->data != v)");
+    linked_list_search.push_back("    cur = cur->next");
+    linked_list_search.push_back("if (cur != NULL) return cur");
+    code_snippets["linked_list_search"] = linked_list_search;
 
-        std::vector <std::string> linked_list_update;
-        linked_list_update.push_back("node cur = head");
-        linked_list_update.push_back("while (cur != NULL && cur->data != oldValue)");
-        linked_list_update.push_back("    cur = cur->next");
-        linked_list_update.push_back("if (cur != NULL) cur->data = newValue");
-        code_snippets["linked_list_update"] = linked_list_update;
+    std::vector <std::string> linked_list_update;
+    linked_list_update.push_back("node cur = head");
+    linked_list_update.push_back("while (cur != NULL && cur->data != oldValue)");
+    linked_list_update.push_back("    cur = cur->next");
+    linked_list_update.push_back("if (cur != NULL) cur->data = newValue");
+    code_snippets["linked_list_update"] = linked_list_update;
 */
 
 Vector2 SinglyLinkedList::get_pos(int i) {
@@ -50,13 +50,16 @@ float SinglyLinkedList::get_alpha(int i) {
     code_snippets["linked_list_insert"] = linked_list_insert;
 */
 
-void SinglyLinkedList::insert(int value) {
+void SinglyLinkedList::insert(int value, int is_reset) {
     curent_state = 0;
-    history.clear();
-    history.push_back(list);
-    snippets.clear();
+    if (is_reset == 0) {
+        history.clear();
+        snippets.clear();
+    }
 
+    history.push_back(list);
     snippets.push_back(0);
+    
     for (int i = 0; i < list.size(); i++) {
         list[i].is_checking = true;
         if (i) {
@@ -103,13 +106,16 @@ void SinglyLinkedList::insert(int value) {
     code_snippets["linked_list_delete"] = linked_list_delete;
 */
 
-void SinglyLinkedList::delete_node(int value) {
+void SinglyLinkedList::delete_node(int value, int is_reset) {
     if (list.empty()) return;  
     curent_state = 0;
-    history.clear();
+    if (is_reset == 0) {
+        history.clear();
+        snippets.clear();
+    }
+    
     history.push_back(list);
-    snippets.clear();
-    snippets.push_back(0);
+    snippets.push_back(0); 
 
     int id = -1;
     for (int i = 0; i < list.size(); i++) {
@@ -173,6 +179,7 @@ void SinglyLinkedList::search(int value) {
             history.push_back(list);
             snippets.push_back(3);
             is_searched = true;
+            break;
         }
     }
 
@@ -248,6 +255,88 @@ void SinglyLinkedList::draw() {
     }
 }
 
+void SinglyLinkedList::Random_build(int n) {
+    list.clear();
+    for (int i = 0; i < n; i++) {
+        Node newNode;
+        newNode.data = GetRandomValue(0, 999);
+        newNode.alpha_start = 1.0f;
+        newNode.alpha_end = 1.0f;
+        if (list.empty()) {
+            newNode.start_pos = newNode.target_pos = { 50, 300 };
+        } else {
+            newNode.start_pos = newNode.target_pos = { list.back().target_pos.x + 160, 300 };
+        }
+        list.push_back(newNode);
+    }
+}
+
+void SinglyLinkedList::build_from_str(std::string str) {
+    list.clear();
+    int value = 0;
+    for (int i = 0; i < str.size(); i++) {
+        if (str[i] == ' ') {
+            Node newNode;
+            newNode.data = value;
+            newNode.alpha_start = 1.0f;
+            newNode.alpha_end = 1.0f;
+            if (list.empty()) {
+                newNode.start_pos = newNode.target_pos = { 50, 300 };
+            } else {
+                newNode.start_pos = newNode.target_pos = { list.back().target_pos.x + 160, 300 };
+            }
+            list.push_back(newNode);
+            value = 0;
+        } else {
+            value = value * 10 + (str[i] - '0');
+        }
+    }
+    // Don't forget the last node
+    if (!str.empty() && str.back() != ' ') {
+        Node newNode;
+        newNode.data = value;
+        newNode.alpha_start = 1.0f;
+        newNode.alpha_end = 1.0f;
+        if (list.empty()) {
+            newNode.start_pos = newNode.target_pos = { 50, 300 };
+        } else {
+            newNode.start_pos = newNode.target_pos = { list.back().target_pos.x + 160, 300 };
+        }
+        list.push_back(newNode);
+    }
+}
+
+/*
+    linked_list_update.push_back("node cur = head");
+    linked_list_update.push_back("while (cur != NULL && cur->data != oldValue)");
+    linked_list_update.push_back("    cur = cur->next");
+    linked_list_update.push_back("if (cur != NULL) cur->data = newValue");
+*/
+void SinglyLinkedList::update_node(int oldValue, int newValue) {
+    history.clear();
+    snippets.clear();
+    curent_state = 0;
+    progress = 0;
+    history.push_back(list);
+    snippets.push_back(0);
+
+    for (auto &x : list) {
+        x.is_checking = true;
+        history.push_back(list);
+        snippets.push_back(2);
+        x.is_checking = false;
+
+        if (x.data == oldValue) {
+            x.data = newValue;
+            history.push_back(list);
+            snippets.push_back(3);
+            break;
+        }
+    }
+
+    list = history[0];
+}
+
 void SinglyLinkedList::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
@@ -256,7 +345,28 @@ void SinglyLinkedList::update() {
             delete_node(stoi(opp.str_value));
         } else if (opp.command == "Search") {
             search(stoi(opp.str_value));
+        } else if (opp.command == "Random") {
+            Random_build(stoi(opp.str_value));
+        } else if (opp.command == "KeyBoard") {
+            build_from_str(opp.str_value);
+        } else if (opp.command == "From File") {
+            std::ifstream file(opp.str_value);
+            getline(file, opp.str_value);
+            build_from_str(opp.str_value);
+            file.close();
+        } else if (opp.command == "Update") {
+            std::string oldValue, newValue;
+            for (int i = 0; i < opp.str_value.size(); i++) {
+                if (opp.str_value[i] == ' ') {
+                    oldValue = opp.str_value.substr(0, i);
+                    newValue = opp.str_value.substr(i + 1);
+                    break;
+                }
+            }
+            update_node(stoi(oldValue), stoi(newValue));
         }
+
+        opp.appear_sub_option = false;
         opp.is_pending = false;
     }
 }

@@ -41,6 +41,10 @@ void operation::update() {
 
     input.isabc = isabc;
 
+    if (command == "Random") {
+        input.isabc = false;
+    }
+    
     int id = 0;
     for (auto str : options) {
         Rectangle textRect = {x + 20, y + 20 + id * 40, 200, 40 };
@@ -49,6 +53,10 @@ void operation::update() {
             command = str;
             input.appear = true;
             input.initialize(x + 250, y + 20 + id * 40, 200, 40, "Enter value to " + str);
+            if (str == "Update") {
+                input.appear = true;
+                input.initialize(x + 250, y + 20 + id * 40, 200, 40, "Enter oldValue newValue", 1);
+            }
             break;
         }
 
@@ -72,7 +80,7 @@ void operation::update() {
                     input.initialize(x + sub_id * 250 , y + 100, 200, 40, "Enter number of nodes");
                 } else if (str == "KeyBoard") {
                     input.appear = true;
-                    input.initialize(x + sub_id * 250, y + 100, 200, 40, "Enter all values (split by space)");
+                    input.initialize(x + sub_id * 250, y + 100, 200, 40, "Enter all values (split by space)", 1);
                 } else if (str == "From File") {
                     str_value = open_file_path();
                     is_pending = true;
