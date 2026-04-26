@@ -50,7 +50,7 @@ float SinglyLinkedList::get_alpha(int i) {
     code_snippets["linked_list_insert"] = linked_list_insert;
 */
 
-void SinglyLinkedList::insert(int value, int is_reset) {
+void SinglyLinkedList::insert(int index, int value, int is_reset) {
     curent_state = 0;
     if (is_reset == 0) {
         history.clear();
@@ -60,7 +60,7 @@ void SinglyLinkedList::insert(int value, int is_reset) {
     history.push_back(list);
     snippets.push_back(0);
     
-    for (int i = 0; i < list.size(); i++) {
+    for (int i = 0; i < list.size() && i < index; i++) {
         list[i].is_checking = true;
         if (i) {
             list[i-1].is_checking = false;
@@ -69,32 +69,53 @@ void SinglyLinkedList::insert(int value, int is_reset) {
         snippets.push_back(2);
     }
 
+    if (index > list.size()) {
+        for (int i = 0; i < list.size(); i++) {
+            list[i].is_checking = false;
+        }
+        history.push_back(list);
+        snippets.push_back(-1);
+        list = history[0];
+        return;
+    }
+
     Node newNode;
     newNode.data = value;
     newNode.alpha_start = 0.0f;
     newNode.alpha_end = 1.0f;
-    if (list.empty()) {
+
+    if (index == 0) {
         newNode.start_pos = { -100, 300 };
         newNode.target_pos = { 50, 300 };
+        //list.insert(list.begin() + index - 1, newNode);
     } else {
-        newNode.start_pos = { list.back().target_pos.x, 300 };
-        newNode.target_pos = { list.back().target_pos.x + 160, 300 };
+        newNode.start_pos = { list[index - 1].target_pos.x + 160, 300 };
+        newNode.target_pos = { list[index - 1].target_pos.x + 160, 300 };
+        //list.insert(list.begin() + index - 1, newNode);
+    }
+
+    for (int i = index; i < list.size(); i++) {
+        list[i].target_pos.x += 160;
     }
 
     if (list.size()) {
-        list.back().is_checking = false;
+        for (int i = 0; i < list.size(); i++) {
+            list[i].is_checking = false;
+        }   
     }
 
-    list.push_back(newNode);
     history.push_back(list);
-    list.pop_back();
-    newNode.start_pos = newNode.target_pos;
-    newNode.alpha_start = 1.0f;
     snippets.push_back(3);
-    list.push_back(newNode);
+    list.insert(list.begin() + index, newNode);
+    list[index].start_pos = list[index].target_pos;
+    list[index].alpha_start = 1.0f;
+    for (int i = index + 1; i < list.size(); i++) {
+        list[i].start_pos.x += 160;
+    }
     history.push_back(list);
     list = history[0];
 }
+
 
 /*
     std::vector <std::string> linked_list_delete;
@@ -340,7 +361,15 @@ void SinglyLinkedList::update_node(int oldValue, int newValue) {
 void SinglyLinkedList::update() {
     if (opp.is_pending) {
         if (opp.command == "Insert") {
-            insert(stoi(opp.str_value));
+            std::string index, value;
+            for (int i = 0; i < opp.str_value.size(); i++) {
+                if (opp.str_value[i] == ' ') {
+                    index = opp.str_value.substr(0, i);
+                    value = opp.str_value.substr(i + 1);
+                    break;
+                }
+            }
+            insert(stoi(index), stoi(value));
         } else if (opp.command == "Delete") {
             delete_node(stoi(opp.str_value));
         } else if (opp.command == "Search") {
@@ -389,6 +418,7 @@ void SinglyLinkedList::draw_task() {
 }
 
 std::string SinglyLinkedList::run() {
+    opp.is_linked_list = true;
     cam.initialize();
     opp.initialize(20, 700);
     int screenWidth = 1000;

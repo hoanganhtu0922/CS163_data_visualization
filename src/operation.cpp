@@ -57,6 +57,11 @@ void operation::update() {
                 input.appear = true;
                 input.initialize(x + 250, y + 20 + id * 40, 200, 40, "Enter oldValue newValue", 1);
             }
+
+            if (is_linked_list && str == "Insert") {
+                input.appear = true;
+                input.initialize(x + 250, y + 20 + id * 40, 200, 40, "Enter index and value", 1);
+            }
             break;
         }
 

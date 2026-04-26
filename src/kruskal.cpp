@@ -79,6 +79,7 @@ void kruskal::find_mst() {
 
     history.push_back(sorted_edges); // Lưu lại trạng thái cuối cùng của MST sau khi hoàn thành thuật toán
     snippets.push_back(-1); // Thêm đoạn mã tương ứng với bước này (có thể là "Kruskal's algorithm completed")
+    history.push_back(history[0]);
 }
 
 void kruskal::draw() {

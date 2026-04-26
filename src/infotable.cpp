@@ -20,7 +20,7 @@ void infotable::add(std::string new_info) {
 }
 
 std::string infotable::clicked() {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         std::cout << "Mouse Clicked at: " << GetMousePosition().x << ", " << GetMousePosition().y << std::endl;
         for (int i = 0; i < info.size(); i++) {
             Rectangle cell = { (float)x, (float)y + i * 40, 150, 40 };
