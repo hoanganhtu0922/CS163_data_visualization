@@ -47,4 +47,4 @@ The codebase follows a modular layer separation:
 4. Control Playback: 
    * Drag the red handle on the progress bar to jump between states.
    * Adjust the speed slider to speed up or slow down the animation.
-   * Right-click and drag to pan the camera, and use the scroll wheel to zoom.
+   * click and drag to pan the camera, and use the scroll wheel to zoom.
